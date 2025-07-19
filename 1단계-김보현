@@ -31,3 +31,5 @@ summary.columns = ['Structure Type', 'Count']
 print("\n📊 구조물 종류별 요약 통계:")
 print(summary)
 
+python mas_map.py
+
