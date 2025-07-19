@@ -1,0 +1,33 @@
+import pandas as pd
+
+# CSV 파일 불러오기
+map_df = pd.read_csv('area_map.csv')
+struct_df = pd.read_csv('area_struct.csv')
+category_df = pd.read_csv('area_category.csv')
+
+#구조물 ID를 이름으로 변환 (카테고리 이름 매핑)
+struct_df = struct_df.merge(category_df, how='left', left_on='structure_id', right_on='id')
+struct_df = struct_df.drop(columns=['id']) 
+struct_df = struct_df.rename(columns={'name': 'structure_name'})
+
+#데이터 병합
+merged_df = map_df.merge(struct_df, on='structure_id', how='left')
+
+#area 기준 정렬
+merged_df = merged_df.sort_values(by='area')
+
+#area 1 데이터만 필터링
+area1_df = merged_df[merged_df['area'] == 1]
+
+#결과 출력
+print("🔍 Area 1 데이터:")
+print(area1_df)
+
+#(보너스) 구조물 종류별 요약 통계
+summary = area1_df['structure_name'].value_counts().reset_index()
+summary.columns = ['Structure Type', 'Count']
+
+
+print("\n📊 구조물 종류별 요약 통계:")
+print(summary)
+
