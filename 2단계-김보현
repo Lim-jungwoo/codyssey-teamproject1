@@ -1,0 +1,59 @@
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import numpy as np
+
+# 지도 크기 설정
+min_x, min_y = 1, 1  # 지도 좌측 상단의 좌표 (1, 1)
+max_x, max_y = 10, 10  # 지도 우측 하단의 좌표 (10, 10)
+
+# 객체 좌표 예시 (직접 데이터를 추가해주세요)
+# 아파트/빌딩, 반달곰 커피점, 내 집, 건설 현장 등의 위치를 아래와 같이 설정합니다.
+apartments = [(3, 3), (7, 2), (6, 8)]  # 아파트 위치 (예시)
+buildings = [(2, 7), (5, 5), (8, 9)]  # 빌딩 위치 (예시)
+coffee_shops = [(4, 6)]  # 반달곰 커피점 위치 (예시)
+my_house = [(6, 3)]  # 내 집 위치 (예시)
+construction_sites = [(3, 2), (7, 5)]  # 건설 현장 위치 (예시)
+
+# 새로운 그림을 생성합니다.
+fig, ax = plt.subplots(figsize=(10, 10))  # 크기 10x10의 그래프를 생성합니다.
+
+# 그리드 라인 추가
+ax.set_xticks(np.arange(min_x, max_x + 1, 1))  # X축 그리드 라인
+ax.set_yticks(np.arange(min_y, max_y + 1, 1))  # Y축 그리드 라인
+ax.grid(True, which='both')  # 그리드 라인 표시
+
+# 지도 범위 설정
+ax.set_xlim(min_x, max_x)  # X축 범위 (1부터 10까지)
+ax.set_ylim(min_y, max_y)  # Y축 범위 (1부터 10까지)
+
+# 아파트와 빌딩: 갈색 원형으로 표시
+for x, y in apartments + buildings:
+    ax.add_patch(plt.Circle((x, y), 0.3, color='brown', zorder=5))  # x, y 위치에 갈색 원형 추가
+
+# 반달곰 커피점: 녹색 사각형으로 표시
+for x, y in coffee_shops:
+    ax.add_patch(plt.Rectangle((x - 0.2, y - 0.2), 0.4, 0.4, color='green', zorder=5))  # x, y 위치에 녹색 사각형 추가
+
+# 내 집 위치: 녹색 삼각형으로 표시
+for x, y in my_house:
+    ax.add_patch(plt.Polygon([(x, y + 0.3), (x - 0.3, y - 0.3), (x + 0.3, y - 0.3)], color='green', zorder=5))  # 삼각형 추가
+
+# 건설 현장: 회색 사각형으로 표시
+for x, y in construction_sites:
+    ax.add_patch(plt.Rectangle((x - 0.2, y - 0.2), 0.4, 0.4, color='gray', zorder=5))  # x, y 위치에 회색 사각형 추가
+
+# 범례 추가
+# 각 아이콘에 대한 설명을 추가하여 사용자가 어떤 아이콘이 무엇을 의미하는지 알 수 있게 합니다.
+handles = [
+    patches.Patch(color='brown', label='아파트/빌딩'),  # 갈색 원형은 아파트/빌딩을 의미
+    patches.Rectangle((0, 0), 1, 1, color='green', label='반달곰 커피점'),  # 녹색 사각형은 반달곰 커피점
+    plt.Polygon([(0, 0), (0, 1), (1, 0)], color='green', label='내 집'),  # 녹색 삼각형은 내 집
+    patches.Rectangle((0, 0), 1, 1, color='gray', label='건설 현장')  # 회색 사각형은 건설 현장
+]
+
+ax.legend(handles=handles, loc='upper left')  # 범례를 지도 왼쪽 상단에 배치
+
+# 이미지 저장
+plt.title("지역 지도")  # 지도 제목
+plt.savefig("map.png")  # 이미지를 'map.png'로 저장
+plt.show()  # 그래프를 화면에 출력
