@@ -9,11 +9,11 @@ elif len(sys.argv) == 2:
     try:
         area_number = int(sys.argv[1])
     except ValueError:
-        print("Please provide a valid area number.")
+        print('Please provide a valid area number.')
         sys.exit(1)
     output_file = f'area{sys.argv[1]}.csv'
 else:
-    print("Usage: python mas_map.py [area_number]")
+    print('Usage: python mas_map.py [area_number]')
     sys.exit(1)
 
 area_map = pd.read_csv('area_map.csv')

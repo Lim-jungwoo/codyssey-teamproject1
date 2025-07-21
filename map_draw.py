@@ -16,7 +16,7 @@ mpl.rcParams['axes.unicode_minus'] = False
 
 import sys
 if len(sys.argv) < 2:
-    print("Usage: python map_draw.py csv_file_name.csv")
+    print('Usage: python map_draw.py csv_file_name.csv')
     sys.exit(1)
 
 csv_file = sys.argv[1]
