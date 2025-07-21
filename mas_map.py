@@ -4,14 +4,14 @@ import sys
 output_file = None
 area_number = None
 if len(sys.argv) == 1:
-    output_file = 'all_area.csv'
+    output_file = 'all_area.pkl'
 elif len(sys.argv) == 2:
     try:
         area_number = int(sys.argv[1])
     except ValueError:
         print('Please provide a valid area number.')
         sys.exit(1)
-    output_file = f'area{sys.argv[1]}.csv'
+    output_file = f'area{sys.argv[1]}.pkl'
 else:
     print('Usage: python mas_map.py [area_number]')
     sys.exit(1)
@@ -40,7 +40,8 @@ merged_sorted = merged_sorted[cols]
 # print(merged_sorted.head(30))
 # print(merged_sorted.columns)
 
-merged_sorted.fillna('없음').to_csv(f'{output_file}', index = False)
+# merged_sorted.fillna('없음').to_csv(f'{output_file}', index = False)
+merged_sorted.to_pickle(f'{output_file}')
 
 report = merged_sorted.groupby('struct').agg(
     count = ('struct', 'count'),

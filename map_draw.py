@@ -16,12 +16,12 @@ mpl.rcParams['axes.unicode_minus'] = False
 
 import sys
 if len(sys.argv) < 2:
-    print('Usage: python map_draw.py csv_file_name.csv')
+    print('Usage: python map_draw.py [pkl_file].pkl')
     sys.exit(1)
 
-csv_file = sys.argv[1]
+pkl_file = sys.argv[1]
 
-df = pd.read_csv(csv_file)
+df = pd.read_pickle(pkl_file)
 df.columns = df.columns.str.strip()
 
 x_max = df['x'].max()
@@ -43,7 +43,7 @@ for _, row in construction.iterrows():
 non_construction = df[df['ConstructionSite'] == 0]
 
 for _, row in non_construction.iterrows():
-    struct = row['struct'].strip()
+    struct = row['struct'].strip() if pd.notna(row['struct']) else 'Nothing'
 
     if struct in ['Apartment', 'Building']:
         ax.plot(row['x'], row['y'], marker = 'o', color = 'brown', markersize = 30)
