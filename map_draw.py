@@ -1,73 +1,85 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-import platform
-
-# 운영체제별 한글 폰트 설정
-if platform.system() == 'Darwin':  # macOS
-    mpl.rc('font', family='AppleGothic')
-elif platform.system() == 'Windows':
-    mpl.rc('font', family='Malgun Gothic')
-else:  # Linux 등
-    mpl.rc('font', family='NanumGothic')  # 설치 필요
-
-# 마이너스 깨짐 방지
-mpl.rcParams['axes.unicode_minus'] = False
-
-import sys
-if len(sys.argv) < 2:
-    print('Usage: python map_draw.py [pkl_file].pkl')
-    sys.exit(1)
-
-pkl_file = sys.argv[1]
-
-df = pd.read_pickle(pkl_file)
-df.columns = df.columns.str.strip()
-
-x_max = df['x'].max()
-y_max = df['y'].max()
-
-fig, ax = plt.subplots(figsize=(x_max, y_max))
-
-print(x_max, y_max)
-
-for x in range(1, x_max + 2):
-    ax.axvline(x - 0.5, color = 'lightgray', linewidth = 0.5)
-for y in range(1, y_max + 2):
-    ax.axhline(y - 0.5, color = 'lightgray', linewidth = 0.5)
-
-construction = df[df['ConstructionSite'] > 0]
-for _, row in construction.iterrows():
-    ax.plot(row['x'], row['y'], marker = 's', color = 'grey', markersize = 30)
-
-non_construction = df[df['ConstructionSite'] == 0]
-
-for _, row in non_construction.iterrows():
-    struct = row['struct'].strip() if pd.notna(row['struct']) else 'Nothing'
-
-    if struct in ['Apartment', 'Building']:
-        ax.plot(row['x'], row['y'], marker = 'o', color = 'brown', markersize = 30)
-    elif struct == 'BandalgomCoffee':
-        ax.plot(row['x'], row['y'], marker = 's', color = 'green', markersize = 30)
-    elif struct == 'MyHome':
-        ax.plot(row['x'], row['y'], marker = '^', color = 'green', markersize = 30)
-
-ax.set_xlim(0.5, x_max + 0.5)
-ax.set_ylim(0.5, y_max + 0.5)
-ax.set_aspect('equal')
-ax.invert_yaxis()
-ax.set_xticks(range(1, x_max + 1))
-ax.set_yticks(range(1, y_max + 1))
-# ax.set_title('지역 구조물 지도')
-
 from matplotlib.lines import Line2D
-legend_elements = [
-    Line2D([0], [0], marker = 's', color = 'grey', label = '건설 현장', markersize = 10),
-    Line2D([0], [0], marker = 'o', color = 'brown', label = '아파트/건물', markersize = 10),
-    Line2D([0], [0], marker = 's', color = 'green', label = '반달곰 커피', markersize = 10),
-    Line2D([0], [0], marker = '^', color = 'green', label = '내 집', markersize = 10)
-]
-ax.legend(handles = legend_elements, loc = 'upper right', fontsize = 10)
 
-plt.tight_layout()
-plt.savefig('map.png')
+
+def read_data(pkl_file):
+    df = pd.read_pickle(pkl_file)
+    df.columns = df.columns.str.strip()
+    return df
+
+
+def setup_plot(ax: plt.Axes, x_max, y_max):
+    ax.set_xlim(0.5, x_max + 0.5)
+    ax.set_ylim(0.5, y_max + 0.5)
+    ax.set_aspect('equal')
+    ax.invert_yaxis()
+    ax.set_xticks(range(1, x_max + 1))
+    ax.set_yticks(range(1, y_max + 1))
+
+
+def draw_grid(ax: plt.Axes, x_max, y_max):
+    for x in range(1, x_max + 2):
+        ax.axvline(x - 0.5, color='lightgray', linewidth=0.5)
+    for y in range(1, y_max + 2):
+        ax.axhline(y - 0.5, color='lightgray', linewidth=0.5)
+
+
+def draw_structure(df: pd.DataFrame, ax: plt.Axes):
+    construction = df[df['ConstructionSite'] > 0]
+    ax.scatter(
+        construction['x'],
+        construction['y'],
+        marker='s',
+        color='grey',
+        s=900,
+    )
+
+    non_construction = df[df['ConstructionSite'] == 0]
+    for _, row in non_construction.iterrows():
+        struct = row['struct'].strip() if pd.notna(
+            row['struct']) else 'Nothing'
+
+        if struct in ['Apartment', 'Building']:
+            ax.plot(row['x'], row['y'], marker='o', color='brown',
+                    markersize=30)
+        elif struct == 'BandalgomCoffee':
+            ax.plot(row['x'], row['y'], marker='s', color='green',
+                    markersize=30)
+        elif struct == 'MyHome':
+            ax.plot(row['x'], row['y'], marker='^',
+                    color='green', markersize=30)
+
+
+def draw_legend(ax: plt.Axes):
+    legend_elements = [
+        Line2D([0], [0], marker='s', color='grey',
+               label='Construction Site', markersize=10),
+        Line2D([0], [0], marker='o', color='brown',
+               label='Apartment/Building', markersize=10),
+        Line2D([0], [0], marker='s', color='green',
+               label='BandalgomCoffee', markersize=10),
+        Line2D([0], [0], marker='^', color='green',
+               label='MyHome', markersize=10)
+    ]
+    ax.legend(handles=legend_elements, loc='upper right', fontsize=10)
+
+
+def plot_area_map(df, output_file='map.png'):
+    x_max = df['x'].max()
+    y_max = df['y'].max()
+
+    fig, ax = plt.subplots(figsize=(x_max, y_max))
+    draw_grid(ax, x_max, y_max)
+    draw_structure(df, ax)
+    draw_legend(ax)
+    setup_plot(ax, x_max, y_max)
+
+    plt.tight_layout()
+    plt.savefig(output_file)
+    print(f"Saved map to {output_file}")
+
+
+if __name__ == "__main__":
+    df = read_data('all_area.pkl')
+    plot_area_map(df, 'map.png')
