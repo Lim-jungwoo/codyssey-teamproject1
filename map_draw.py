@@ -1,76 +1,86 @@
-#미 완성
-
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
-
-# Load the dataset
-df = pd.read_csv('dourses.csv')
-
-# Rename the column ' struct' to 'struct' to ensure consistency.
-df.rename(columns={' struct': 'struct'}, inplace=True)
-
-# Fill NaN values in 'struct' column with 'Unknown' to handle missing data gracefully.
-df['struct'].fillna('Unknown', inplace=True)
-
-# Determine the maximum x and y coordinates to set plot boundaries.
-max_x = df['x'].max()
-max_y = df['y'].max()
-
-# Create the plot
-plt.figure(figsize=(10, 10))
-
-# Define colors and markers for different structure types.
-colors = {
-    'Building': 'brown',
-    'Apartment': 'brown',
-    'Asiatic black bear coffee': 'green',
-    'My house': 'green',
-    'ConstructionSite': 'gray',
-    'Unknown': 'lightgray'
-}
-
-markers = {
-    'Building': 'o',
-    'Apartment': 'o',
-    'Asiatic black bear coffee': 's',
-    'My house': '^',
-    'ConstructionSite': 's',
-    'Unknown': 'o'
-}
+from matplotlib.lines import Line2D
 
 
-df['plot_type'] = df.apply(lambda row: 'ConstructionSite' if row['ConstructionSite'] == 1 else row['struct'], axis=1)
-print(df['plot_type'])
+def read_data(pkl_file):
+    df = pd.read_pickle(pkl_file)
+    df.columns = df.columns.str.strip()
+    return df
 
-# Plot each point based on its 'plot_type'.
-for struct_type in df['plot_type'].unique():
-    subset = df[df['plot_type'] == struct_type]
-    
-    # Retrieve marker and color based on 'struct_type', with fallbacks for undefined types.
-    marker = markers.get(struct_type)
-    color = colors.get(struct_type)
 
-    plt.scatter(subset['x'], subset['y'], color=color, marker=marker, label=struct_type)
+def setup_plot(ax: plt.Axes, x_max, y_max):
+    ax.set_xlim(0.5, x_max + 0.5)
+    ax.set_ylim(0.5, y_max + 0.5)
+    ax.set_aspect('equal')
+    ax.invert_yaxis()
+    ax.set_xticks(range(1, x_max + 1))
+    ax.set_yticks(range(1, y_max + 1))
 
-# Configure grid lines to enhance readability of coordinates.
-plt.xticks(np.arange(1, max_x + 1, 1))
-plt.yticks(np.arange(1, max_y + 1, 1))
-plt.grid(True, which='both', color='lightgray', linestyle='-', linewidth=0.5)
 
-# Set plot labels and title.
-plt.xlabel('X Coordinate')
-plt.ylabel('Y Coordinate')
-plt.title('Area Map Visualization')
+def draw_grid(ax: plt.Axes, x_max, y_max):
+    for x in range(1, x_max + 2):
+        ax.axvline(x - 0.5, color='lightgray', linewidth=0.5)
+    for y in range(1, y_max + 2):
+        ax.axhline(y - 0.5, color='lightgray', linewidth=0.5)
 
-# Adjust plot limits and invert y-axis to match the desired map orientation (top-left is 1,1).
-plt.xlim(0.5, max_x + 0.5)
-plt.ylim(0.5, max_y + 0.5)
-plt.gca().invert_yaxis()
+def draw_structure(df: pd.DataFrame, ax: plt.Axes):
+    construction = df[df['ConstructionSite'] > 0]
+    ax.scatter(
+        construction['x'],
+        construction['y'],
+        marker='s',
+        color='grey',
+        s=900,
+    )
 
-# Display a legend to explain the symbols and colors. Positioned outside to avoid clutter.
-plt.legend(title='Structure Type', bbox_to_anchor=(1.05, 1), loc='upper left')
-plt.tight_layout()
+    non_construction = df[df['ConstructionSite'] == 0]
+    for _, row in non_construction.iterrows():
+        struct = row['struct'].strip() if pd.notna(
+            row['struct']) else 'Nothing'
 
-# Save the generated map as a PNG image.
-plt.savefig('map.png')
+        if struct in ['Apartment', 'Building']:
+            ax.plot(row['x'], row['y'], marker='o', color='brown',
+                    markersize=30)
+        elif struct == 'BandalgomCoffee':
+            ax.plot(row['x'], row['y'], marker='s', color='green',
+                    markersize=30)
+        elif struct == 'MyHome':
+            ax.plot(row['x'], row['y'], marker='^',
+                    color='green', markersize=30)
+
+
+def draw_legend(ax: plt.Axes):
+    legend_elements = [
+        Line2D([0], [0], marker='s', color='grey',
+               label='Construction Site', markersize=10),
+        Line2D([0], [0], marker='o', color='brown',
+               label='Apartment/Building', markersize=10),
+        Line2D([0], [0], marker='s', color='green',
+               label='BandalgomCoffee', markersize=10),
+        Line2D([0], [0], marker='^', color='green',
+               label='MyHome', markersize=10)
+    ]
+    ax.legend(handles=legend_elements, loc='upper right', fontsize=10)
+
+
+def plot_area_map(df, output_file='map.png'):
+    x_max = df['x'].max()
+    y_max = df['y'].max()
+
+    fig, ax = plt.subplots(figsize=(x_max, y_max))
+    draw_grid(ax, x_max, y_max)
+    draw_structure(df, ax)
+    draw_legend(ax)
+    setup_plot(ax, x_max, y_max)
+
+    plt.tight_layout()
+    plt.savefig(output_file)
+    print(f"Saved map to {output_file}")
+
+
+if __name__ == "__main__":
+    draw_grid()
+
+    # df = read_data('all_area.pkl')
+    # plot_area_map(df, 'map.png')
