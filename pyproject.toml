@@ -1,0 +1,21 @@
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+select = [
+    "E",  # pycodestyle (PEP 8)
+    "F",  # pyflakes
+    "W",  # warnings
+    "I",
+    "C90",  # mccabe (복잡도)
+]
+
+exclude = [
+    ".venv",
+    "__pycache__",
+    "migrations"
+]
+
+[tool.ruff.format]
+quote-style = "single"  # 문자열 따옴표는 기본적으로 ' 사용
+indent-style = "space"  # 들여쓰기는 space

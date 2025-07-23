@@ -1,0 +1,14 @@
+{
+    "python.languageServer": "Pylance",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit",
+            "editor.insertSpaces": "explicit"
+        }
+    },
+    "tabularScope.pythonPath": "/Users/hidsquid97/Redo/21_Codyssey/codyssey-teamproject1/.venv",
+}
