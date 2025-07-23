@@ -30,6 +30,7 @@ def generate_map(output_file: str = 'area_map.pkl'):
     cols = [col for col in cols if col !=
             'ConstructionSite'] + ['ConstructionSite']
     merged_sorted = merged_sorted[cols]
+    merged_sorted = merged_sorted.map(lambda x: x.strip() if isinstance(x, str) else x)
 
     merged_sorted.to_pickle(f'{output_file}')
     print(f"{output_file} 저장 완료")
