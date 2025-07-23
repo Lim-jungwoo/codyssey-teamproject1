@@ -3,9 +3,13 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 
-def read_data(pkl_file):
-    df = pd.read_pickle(pkl_file)
-    df.columns = df.columns.str.strip()
+def load_data(pkl_file):
+    try:
+        df: pd.DataFrame = pd.read_pickle(pkl_file)
+        df.columns = df.columns.str.strip()
+    except Exception as e:
+        print(f"오류 발생: {e}")
+        return None
     return df
 
 
@@ -26,16 +30,21 @@ def draw_grid(ax: plt.Axes, x_max, y_max):
 
 
 def draw_structure(df: pd.DataFrame, ax: plt.Axes):
-    construction = df[df['ConstructionSite'] > 0]
-    ax.scatter(
-        construction['x'],
-        construction['y'],
-        marker='s',
-        color='grey',
-        s=900,
-    )
+    non_construction: pd.DataFrame = None
+    has_construction_site = df.get('ConstructionSite')
+    if has_construction_site is not None:
+        construction = df[df['ConstructionSite'] > 0]
+        ax.scatter(
+            construction['x'],
+            construction['y'],
+            marker='s',
+            color='grey',
+            s=900,
+        )
+        non_construction = df[df['ConstructionSite'] == 0]
+    else:
+        non_construction = df
 
-    non_construction = df[df['ConstructionSite'] == 0]
     for _, row in non_construction.iterrows():
         struct = row['struct'].strip() if pd.notna(
             row['struct']) else 'Nothing'
@@ -65,21 +74,29 @@ def draw_legend(ax: plt.Axes):
     ax.legend(handles=legend_elements, loc='upper right', fontsize=10)
 
 
-def plot_area_map(df, output_file='map.png'):
+def plot_map(df, output_file='map.png'):
     x_max = df['x'].max()
     y_max = df['y'].max()
 
     fig, ax = plt.subplots(figsize=(x_max, y_max))
-    draw_grid(ax, x_max, y_max)
-    draw_structure(df, ax)
-    draw_legend(ax)
     setup_plot(ax, x_max, y_max)
+
+    draw_grid(ax, x_max, y_max)
+
+    draw_structure(df, ax)
+
+    draw_legend(ax)
 
     plt.tight_layout()
     plt.savefig(output_file)
-    print(f"Saved map to {output_file}")
+    print(f"{output_file} 저장 완료")
+
+def main(pkl_file='area_map.pkl'):
+    df = load_data(pkl_file)
+    if df is None:
+        return
+    plot_map(df, 'map.png')
 
 
 if __name__ == "__main__":
-    df = read_data('all_area.pkl')
-    plot_area_map(df, 'map.png')
+    main("area_map.pkl")
