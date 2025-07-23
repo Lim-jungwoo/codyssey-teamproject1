@@ -23,6 +23,11 @@ print(area_struct)
 # 3. 세 데이터를 하나의 DataFrame으로 병합하고, area를 기준으로 정렬
 merged_df = pd.merge(left=area_struct, right=area_map, on=['x', 'y'])
 
+merged_df.rename(columns=lambda name: name.strip(), inplace=True)
+
+for col in merged_df.select_dtypes(include=['object']).columns:
+    merged_df[col] = merged_df[col].str.strip()
+
 sorted_df = merged_df.sort_values(by='area')
 
 merged_df.to_pickle('merged.pkl')
